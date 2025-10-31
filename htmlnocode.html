@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Analysis Platform</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            margin-bottom: 20px;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .panel-header h2 {
+            font-size: 1.3em;
+            color: #333;
+        }
+
+        .code-editor {
+            position: relative;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 400px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            resize: vertical;
+            background: #f8f9fa;
+            line-height: 1.5;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            flex: 1;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .results-panel {
+            grid-column: 1 / -1;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .result-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .result-card.error {
+            border-left-color: #dc3545;
+        }
+
+        .result-card.warning {
+            border-left-color: #ffc107;
+        }
+
+        .result-card.success {
+            border-left-color: #28a745;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .result-header h3 {
+            font-size: 1.2em;
+            color: #333;
+        }
+
+        .badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        .badge.error {
+            background: #dc3545;
+            color: white;
+        }
+
+        .badge.warning {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .badge.success {
+            background: #28a745;
+            color: white;
+        }
+
+        .badge.info {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .issue-item {
+            background: white;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            border-left: 3px solid #667eea;
+        }
+
+        .issue-item.error {
+            border-left-color: #dc3545;
+        }
+
+        .issue-item.warning {
+            border-left-color: #ffc107;
+        }
+
+        .issue-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 5px;
+        }
+
+        .issue-code {
+            font-family: monospace;
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.85em;
+        }
+
+        .issue-message {
+            color: #555;
+            font-size: 0.95em;
+            line-height: 1.4;
+        }
+
+        .issue-location {
+            color: #888;
+            font-size: 0.85em;
+            margin-top: 5px;
+        }
+
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 10px;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Code Analysis Platform</h1>
+            <p>Analyze your Python code for linting issues and security vulnerabilities</p>
+        </div>
+
+        <div class="main-content">
+            <div class="panel">
+                <div class="panel-header">
+                    <h2>📝 Your Code</h2>
+                </div>
+                <div class="code-editor">
+                    <textarea id="codeInput" placeholder="# Paste your Python code here...
+
+def calculate_sum(a, b):
+    return a + b
+
+def divide(x, y):
+    return x / y
+">def calculate_sum(a, b):
+    return a + b
+
+def greet(name):
+    return f"Hello, {name}!"
+
+def factorial(n):
+    if n == 0:
+        return 1
+    return n * factorial(n - 1)</textarea>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="button-group">
+                <button class="btn-primary" id="analyzeBtn" onclick="analyzeCode()">
+                    🚀 Analyze Code
+                </button>
+                <button class="btn-secondary" onclick="clearAll()">
+                    🗑️ Clear All
+                </button>
+            </div>
+        </div>
+
+        <div class="panel results-panel" id="resultsPanel" style="display: none;">
+            <div class="panel-header">
+                <h2>📊 Analysis Results</h2>
+            </div>
+            <div id="resultsContent"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://nocode-production.up.railway.app';
+
+        async function analyzeCode() {
+            const codeInput = document.getElementById('codeInput').value.trim();
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            const resultsPanel = document.getElementById('resultsPanel');
+            const resultsContent = document.getElementById('resultsContent');
+
+            if (!codeInput) {
+                alert('Please enter some code to analyze!');
+                return;
+            }
+
+            // Show loading state
+            analyzeBtn.disabled = true;
+            analyzeBtn.textContent = '⏳ Analyzing...';
+            resultsPanel.style.display = 'block';
+            resultsContent.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Running analysis on your code...</p>
+                </div>
+            `;
+
+            try {
+                const response = await fetch(`${API_URL}/analyze`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        code: codeInput,
+                        test_code: null,
+                        language: 'python'
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                displayResults(data);
+
+            } catch (error) {
+                resultsContent.innerHTML = `
+                    <div class="result-card error">
+                        <h3>❌ Error</h3>
+                        <p>Failed to analyze code: ${error.message}</p>
+                        <p style="margin-top: 10px; font-size: 0.9em; color: #666;">
+                            Please make sure the backend server is running and accessible.
+                        </p>
+                    </div>
+                `;
+            } finally {
+                analyzeBtn.disabled = false;
+                analyzeBtn.textContent = '🚀 Analyze Code';
+            }
+        }
+
+        function displayResults(data) {
+            const resultsContent = document.getElementById('resultsContent');
+
+            let html = '<div class="results-grid">';
+
+            // Lint Issues Card
+            html += `
+                <div class="result-card ${data.lint_summary.errors > 0 ? 'error' : data.lint_summary.warnings > 0 ? 'warning' : 'success'}">
+                    <div class="result-header">
+                        <h3>🔧 Code Quality</h3>
+                        <span class="badge ${data.lint_summary.errors > 0 ? 'error' : data.lint_summary.warnings > 0 ? 'warning' : 'success'}">
+                            ${data.lint_summary.total_issues} issues
+                        </span>
+                    </div>
+                    <div class="summary-stats">
+                        <div class="stat-box">
+                            <div class="stat-value" style="color: #dc3545;">${data.lint_summary.errors}</div>
+                            <div class="stat-label">Errors</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value" style="color: #ffc107;">${data.lint_summary.warnings}</div>
+                            <div class="stat-label">Warnings</div>
+                        </div>
+                    </div>
+            `;
+
+            if (data.lint_issues.length > 0) {
+                data.lint_issues.forEach(issue => {
+                    html += `
+                        <div class="issue-item ${issue.severity}">
+                            <div class="issue-header">
+                                <span class="issue-code">${issue.code}</span>
+                                <span class="badge ${issue.severity}">${issue.severity}</span>
+                            </div>
+                            <div class="issue-message">${issue.message}</div>
+                            <div class="issue-location">Line ${issue.line}, Column ${issue.column}</div>
+                        </div>
+                    `;
+                });
+            } else {
+                html += '<p style="color: #28a745; text-align: center; padding: 20px;">✅ No linting issues found!</p>';
+            }
+            html += '</div>';
+
+            // Security Issues Card
+            html += `
+                <div class="result-card ${data.security_summary.high > 0 ? 'error' : data.security_summary.medium > 0 ? 'warning' : 'success'}">
+                    <div class="result-header">
+                        <h3>🔒 Security</h3>
+                        <span class="badge ${data.security_summary.high > 0 ? 'error' : data.security_summary.medium > 0 ? 'warning' : 'success'}">
+                            ${data.security_summary.total_issues} issues
+                        </span>
+                    </div>
+                    <div class="summary-stats">
+                        <div class="stat-box">
+                            <div class="stat-value" style="color: #dc3545;">${data.security_summary.high}</div>
+                            <div class="stat-label">High</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value" style="color: #ffc107;">${data.security_summary.medium}</div>
+                            <div class="stat-label">Medium</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value" style="color: #17a2b8;">${data.security_summary.low}</div>
+                            <div class="stat-label">Low</div>
+                        </div>
+                    </div>
+            `;
+
+            if (data.security_issues.length > 0) {
+                data.security_issues.forEach(issue => {
+                    html += `
+                        <div class="issue-item ${issue.severity}">
+                            <div class="issue-header">
+                                <span class="issue-code">${issue.code}</span>
+                                <span class="badge ${issue.severity}">${issue.severity} - ${issue.confidence}</span>
+                            </div>
+                            <div class="issue-message">${issue.message}</div>
+                            <div class="issue-location">Line ${issue.line} | CWE-${issue.cwe}</div>
+                        </div>
+                    `;
+                });
+            } else {
+                html += '<p style="color: #28a745; text-align: center; padding: 20px;">✅ No security issues found!</p>';
+            }
+            html += '</div>';
+
+            // Test Results Card
+            html += `
+                <div class="result-card ${data.test_summary.failed > 0 ? 'error' : data.test_summary.total_tests > 0 ? 'success' : 'info'}">
+                    <div class="result-header">
+                        <h3>🧪 Tests</h3>
+                        <span class="badge ${data.test_summary.failed > 0 ? 'error' : data.test_summary.total_tests > 0 ? 'success' : 'info'}">
+                            ${data.test_summary.total_tests} tests
+                        </span>
+                    </div>
+                    <div class="summary-stats">
+                        <div class="stat-box">
+                            <div class="stat-value" style="color: #28a745;">${data.test_summary.passed}</div>
+                            <div class="stat-label">Passed</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value" style="color: #dc3545;">${data.test_summary.failed}</div>
+                            <div class="stat-label">Failed</div>
+                        </div>
+                    </div>
+            `;
+
+            if (data.test_results.length > 0) {
+                data.test_results.forEach(test => {
+                    html += `
+                        <div class="issue-item ${test.passed ? 'success' : 'error'}">
+                            <div class="issue-header">
+                                <span class="issue-code">${test.test_name}</span>
+                                <span class="badge ${test.passed ? 'success' : 'error'}">${test.passed ? 'PASSED' : 'FAILED'}</span>
+                            </div>
+                            <div class="issue-message" style="font-family: monospace; font-size: 0.85em;">${test.output}</div>
+                        </div>
+                    `;
+                });
+            } else {
+                html += '<p style="color: #17a2b8; text-align: center; padding: 20px;">ℹ️ No tests provided</p>';
+            }
+            html += '</div>';
+
+            html += '</div>';
+            resultsContent.innerHTML = html;
+        }
+
+        function clearAll() {
+            document.getElementById('codeInput').value = '';
+            document.getElementById('testInput').value = '';
+            document.getElementById('resultsPanel').style.display = 'none';
+        }
+
+        // Allow Ctrl+Enter to analyze
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                analyzeCode();
+            }
+        });
+    </script>
+</body>
+</html>
