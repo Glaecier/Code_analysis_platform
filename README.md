@@ -46,7 +46,7 @@ A web-based platform for analyzing Python code quality, security vulnerabilities
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/Code_analysis_platform.git
+git clone https://github.com/Glaecier/Code_analysis_platform.git
 cd Code_analysis_platform
 ```
 
