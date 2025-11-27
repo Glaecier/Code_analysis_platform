@@ -80,12 +80,6 @@ const API_URL = 'http://localhost:8000';
    - **Security**: Check for vulnerabilities with severity ratings
    - **Tests**: View test results with pass/fail status
 
-
-
-## Contributing
-
-Contributions are welcome! Feel free to submit issues or pull requests.
-
 ## License
 
 This project is open source and available under the MIT License.
